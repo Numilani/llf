@@ -1,21 +1,18 @@
 import asyncio
 import sys
 from blessed import Terminal
-from prompt_toolkit.input import create_input
-from prompt_toolkit.output import create_output
-from prompt_toolkit import PromptSession
 
 
 async def ui_loop(term):
-    tty_input = create_input(open("/dev/tty", "r"))
-    tty_output = create_output(open("/dev/tty", "w"))
-    session = PromptSession(input=tty_input, output=tty_output)
     while True:
         if sys.stdin.isatty():
             user_input = await asyncio.to_thread(prompt_input)
             print(f"You entered: {user_input}")
         else:
-            user_input = await session.prompt_async("Enter input(notty): ")
+            ttyin = open("/dev/tty", "r")
+            ttyout = open("/dev/tty", "w")
+            user_input = await asyncio.to_thread(prompt_input, ttyin, ttyout)
+            # user_input = await session.prompt_async("Enter input(notty): ")
             print(f"You entered: {user_input}")
 
 
@@ -27,9 +24,16 @@ async def tty_loop(term):
             return
 
 
-def prompt_input():
-    i = input("Enter input: ")
-    return i
+def prompt_input(ttyin=None, ttyout=None):
+    if ttyin is None:
+        i = input("Enter input: ")
+        return i
+    else:
+        with ttyin, ttyout:
+            ttyout.write("Enter input (ttyfile): ")
+            ttyout.flush()
+            i = ttyin.readline().rstrip("\n")
+            return i
 
 
 def read_lines():
