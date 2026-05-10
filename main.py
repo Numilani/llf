@@ -6,30 +6,13 @@ import types
 log_lines = []
 queue: asyncio.Queue = asyncio.Queue()
 
-async def ui_loop(term, ttyin, ttyout):
-    while True:
-        if sys.stdin.isatty():
-            user_input = await asyncio.to_thread(prompt_input)
-            print(f"You entered: {user_input}")
-        else:
-            user_input = await asyncio.to_thread(prompt_input, ttyin, ttyout)
-            # user_input = await session.prompt_async("Enter input(notty): ")
-            ttyout.write(f"You entered: {user_input}")
-            ttyout.flush()
 
-
-async def tty_loop(term, ttyout):
-    while True:
-        if not sys.stdin.isatty():
-            read_task = asyncio.create_task(read_lines())
-            # await read_lines(ttyout)
-            # await asyncio.to_thread(read_lines)
-            # await write_log(ttyout)
-            write_task = asyncio.create_task(write_log(ttyout))
-            await read_task
-            await write_task
-        else:
-            return
+def write_line(text, ttyout):
+    if sys.stdin.isatty():
+        print(text)
+    else:
+        ttyout.write(text)
+        ttyout.flush()
 
 
 def prompt_input(ttyin=None, ttyout=None):
@@ -37,8 +20,7 @@ def prompt_input(ttyin=None, ttyout=None):
         i = input("Enter input: ")
         return i
     else:
-        ttyout.write("Enter input (ttyfile): ")
-        ttyout.flush()
+        write_line("Enter input: ", ttyout)
         i = ttyin.readline().rstrip("\n")
         return i
 
@@ -51,23 +33,53 @@ async def read_lines():
         await queue.put(line)
 
 
-async def write_log(ttyout):
+def clear_log_printout(term, ttyout):
+    print(term.home)
+    for i in range(16):
+        write_line(term.clear_eol, ttyout)
+        write_line(term.move_down(1) + term.move_x(0), ttyout)
+
+
+async def write_log(term, ttyout):
     while True:
         new_line = await queue.get()
         if new_line is None:
             return
         log_lines.append(new_line)
+        clear_log_printout(term, ttyout)
+        write_line(term.home, ttyout)
         for line in log_lines[-16:]:
-            ttyout.write(line)
-            ttyout.flush()
+            write_line(line, ttyout)
+
+
+async def prompt_loop(term, ttyin, ttyout):
+    while True:
+        write_line(term.move_xy(0, term.height - 2), ttyout)
+        user_input = await asyncio.to_thread(prompt_input, ttyin, ttyout)
+        write_line(f"You entered: {user_input}", ttyout)
+
+
+async def log_print_loop(term, ttyout):
+    while True:
+        if sys.stdin.isatty():
+            # NOTE: add logic for non-pipe reading here later
+            return
+        else:
+            read_task = asyncio.create_task(read_lines())
+            write_task = asyncio.create_task(write_log(term, ttyout))
+            await read_task
+            await write_task
 
 
 async def main():
     term = Terminal()
-    ttyin = open("/dev/tty", "r")
-    ttyout = open("/dev/tty", "w")
-
-    await asyncio.gather(ui_loop(term, ttyin, ttyout), tty_loop(term, ttyout))
+    print(term.home + term.clear)
+    if sys.stdin.isatty():
+        await asyncio.gather(prompt_loop(term, None, None), log_print_loop(term, None))
+    else:
+        ttyin = open("/dev/tty", "r")
+        ttyout = open("/dev/tty", "w")
+        await asyncio.gather(prompt_loop(term, ttyin, ttyout), log_print_loop(term, ttyout))
 
 
 if __name__ == "__main__":
