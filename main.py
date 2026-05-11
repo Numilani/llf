@@ -9,7 +9,7 @@ from llfApp import llfApp
 
 
 def run() -> None:
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 2 and sys.stdin.isatty():
         print("need file (and better error msgs)")
         exit()
     if sys.stdin.isatty():
