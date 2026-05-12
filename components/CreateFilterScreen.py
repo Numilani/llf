@@ -2,9 +2,10 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.containers import Grid
 from textual.widgets import Label, Input, Footer, Static
+from objects.Filter import Filter
 
 
-class CreateFilterScreen(Screen):
+class CreateFilterScreen(Screen[Filter]):
 
     CSS_PATH = "createfilter.tcss"
     BINDINGS = [
@@ -29,4 +30,4 @@ class CreateFilterScreen(Screen):
         yield Footer()
 
     def action_submit(self):
-        self.dismiss((self.query_one("#name", Input).value, self.query_one("#regex", Input).value, False))
+        self.dismiss(Filter(self.query_one("#name", Input).value, self.query_one("#regex", Input).value))

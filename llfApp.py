@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header, Input, SelectionList
 from textual.reactive import reactive
@@ -7,6 +9,8 @@ from components.FileLog import FileLog
 from components.CreateFilterScreen import CreateFilterScreen
 from components.SelectFiltersScreen import SelectFiltersScreen
 from components.LayoutTest import LayoutTest
+from objects.Filter import Filter
+import uuid
 
 
 class llfApp(App):
@@ -22,7 +26,7 @@ class llfApp(App):
     def __init__(self, filename: str) -> None:
         super().__init__()
         self.filename = filename
-        self.filters: list[tuple[str, str, bool]] = []
+        self.filters: list[Filter] = []
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -33,16 +37,21 @@ class llfApp(App):
     #     self.query_one(FileLog).write_line(event.value)
 
     def action_new_filter(self) -> None:
-        def add_filter(filter: tuple[str, str, bool]) -> None:
+        def add_filter(filter: Filter) -> None:
             self.filters.append(filter)
 
-        self.push_screen(CreateFilterScreen(), add_filter)
+        self.push_screen(CreateFilterScreen(), add_filter)  # type: ignore[call-overload]
 
     def action_select_filters(self) -> None:
-        def update_active_filters(filters: list[tuple[str, str, bool]]) -> None:
-            self.filters = filters
+        def update_active_filters(filters: list[UUID]) -> None:
+            for f in self.filters:
+                f.enabled = f.uuid in filters
 
-        self.push_screen(SelectFiltersScreen(self.filters), update_active_filters)
+
+        options = []
+        for f in self.filters:
+            options.append((f.name, f.uuid, f.enabled))
+        self.push_screen(SelectFiltersScreen(options), update_active_filters)  # type: ignore[call-overload]
 
     def action_test_layout(self) -> None:
         self.push_screen(LayoutTest())
