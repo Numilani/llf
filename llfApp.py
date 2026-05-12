@@ -14,7 +14,6 @@ import uuid
 
 
 class llfApp(App):
-    log_lines: reactive[list[str]] = reactive([])
 
     CSS_PATH = "style.tcss"
     BINDINGS = [
@@ -46,6 +45,9 @@ class llfApp(App):
         def update_active_filters(filters: list[UUID]) -> None:
             for f in self.filters:
                 f.enabled = f.uuid in filters
+            active_filters = [filter for filter in self.filters if filter.enabled]
+            self.query_one(FileLog).filters = active_filters
+            self.query_one(FileLog).refilter_log()
 
 
         options = []

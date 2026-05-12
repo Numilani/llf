@@ -10,7 +10,7 @@ class SelectFiltersScreen(Screen[list[UUID]]):
 
     CSS_PATH = "modal.tcss"
     BINDINGS = [
-        ("escape", "", "Back"),
+        ("escape", "app.pop_screen", "Back"),
         ("ctrl+s", "save", "Save Filters"),
     ]
 
