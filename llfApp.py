@@ -6,6 +6,7 @@ from textual.suggester import Suggester, SuggestFromList
 from components.FileLog import FileLog
 from components.CreateFilterScreen import CreateFilterScreen
 from components.SelectFiltersScreen import SelectFiltersScreen
+from components.LayoutTest import LayoutTest
 
 
 class llfApp(App):
@@ -13,13 +14,15 @@ class llfApp(App):
 
     CSS_PATH = "style.tcss"
     BINDINGS = [
-        ('n', 'new_filter', "Create New Filter"),
-        ('f', 'select_filters', "Toggle Filters")
-                ]
+        ("n", "new_filter", "Create New Filter"),
+        ("f", "select_filters", "Toggle Filters"),
+        ("t", "test_layout", "(DBG) test layout"),
+    ]
 
-    def __init__(self, filename) -> None:
+    def __init__(self, filename: str) -> None:
         super().__init__()
         self.filename = filename
+        self.filters: list[tuple[str, str, bool]] = []
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -30,9 +33,16 @@ class llfApp(App):
     #     self.query_one(FileLog).write_line(event.value)
 
     def action_new_filter(self) -> None:
-        self.push_screen(CreateFilterScreen())
+        def add_filter(filter: tuple[str, str, bool]) -> None:
+            self.filters.append(filter)
+
+        self.push_screen(CreateFilterScreen(), add_filter)
 
     def action_select_filters(self) -> None:
-        self.push_screen(SelectFiltersScreen())
+        def update_active_filters(filters: list[tuple[str, str, bool]]) -> None:
+            self.filters = filters
 
+        self.push_screen(SelectFiltersScreen(self.filters), update_active_filters)
 
+    def action_test_layout(self) -> None:
+        self.push_screen(LayoutTest())

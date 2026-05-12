@@ -11,17 +11,18 @@ SelectFiltersScreen {
   align: center middle;
   }
 
-#main {
+.main {
   layer: main;
 }
 
-#popup {
+.popup {
   layer: popup;
   width: 28;
   height: 8;
   content-align: center middle;
 }
 
-#highest {
+.highest {
   layer: highest
 }
+
