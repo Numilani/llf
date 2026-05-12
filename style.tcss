@@ -1,0 +1,27 @@
+Screen {
+    align: center middle;
+    layers: main popup highest;
+  }
+
+CreateFilterScreen {
+    align: center middle;
+  }
+
+SelectFiltersScreen {
+  align: center middle;
+  }
+
+#main {
+  layer: main;
+}
+
+#popup {
+  layer: popup;
+  width: 28;
+  height: 8;
+  content-align: center middle;
+}
+
+#highest {
+  layer: highest
+}
