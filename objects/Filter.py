@@ -1,13 +1,16 @@
 import uuid
 import re
+from uuid import UUID
+from re import Pattern
+
 class Filter():
 
     def __init__(self, name, regex):
-        self.uuid = uuid.uuid7() 
-        self.name = name
-        self.regex_string = regex
-        self.regex_compiled = re.compile(self.regex_string)
-        self.enabled = False
+        self.uuid: UUID = uuid.uuid7() 
+        self.name: str = name
+        self.regex_string: str = regex
+        self.regex_compiled: Pattern = re.compile(self.regex_string)
+        self.enabled: bool = False
 
     def to_dict(self):
         return {
@@ -21,3 +24,10 @@ class Filter():
         f = Filter(d["name"], d["regex"])
         f.uuid = d["uuid"]
         return f
+
+    @classmethod
+    def from_filter(cls, name, regex, uuid) -> Filter:
+        f = Filter(name, regex)
+        f.uuid = uuid
+        return f
+
