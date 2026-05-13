@@ -10,9 +10,6 @@ from components.CreateFilterScreen import CreateFilterScreen
 from components.SelectFiltersScreen import SelectFiltersScreen
 from components.LayoutTest import LayoutTest
 from objects.Filter import Filter
-import uuid
-import os
-import json
 
 import config
 from config import Config

@@ -1,7 +1,7 @@
 import sys
 import subprocess
-import io
 import tempfile
+import platform
 import os
 import selectors
 
@@ -20,7 +20,8 @@ def run() -> None:
         with tempfile.NamedTemporaryFile(
             mode="w+b", buffering=0, prefix="pipe_out_"
         ) as temp_file:
-            with open("/dev/tty", "rb", buffering=0) as tty_stdin:
+            tty_target = "CON" if platform.system() == "Windows" else "/dev/tty"
+            with open(tty_target, "rb", buffering=0) as tty_stdin:
                 with subprocess.Popen(
                     ["python", sys.argv[0], temp_file.name],
                     stdin=tty_stdin,
