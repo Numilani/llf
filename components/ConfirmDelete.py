@@ -1,11 +1,11 @@
 from textual.app import ComposeResult
 from textual.screen import Screen, ModalScreen
 from textual.containers import Grid
-from textual.widgets import Label, Input, Footer, Static
+from textual.widgets import Label, Input, Footer, Static, Button
 from objects.Filter import Filter
 from resource_path import resource_path
 
-class CreateFilterScreen(ModalScreen[Filter]):
+class ConfirmDelete(ModalScreen[str]):
 
     CSS_PATH = resource_path("tcss/createfilter.tcss")
     BINDINGS = [
@@ -23,17 +23,18 @@ class CreateFilterScreen(ModalScreen[Filter]):
         yield Grid(
             Static(classes="full-row"),
             Static(),
-            Label("Create New Filter", classes="center-wide"),
+            Label("Are you sure you wish to delete this filter?", classes="center-wide"),
             Static(),
             Static(),
-            Input(placeholder="Name", id="name", classes="center-wide", value=self.filter_name),
+            Button.success(label="Yes", id="yes"),
+            Button.error(label="No", id="no"),
             Static(),
             Static(),
-            Input(placeholder="Regex", id="regex", classes="center-wide", value=self.regex),
             Static(),
             Static(classes="full-row"),
         )
         yield Footer()
 
-    def action_submit(self):
-        self.dismiss(Filter(self.query_one("#name", Input).value, self.query_one("#regex", Input).value))
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(str(event.button.label))
+

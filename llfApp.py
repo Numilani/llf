@@ -13,11 +13,12 @@ from objects.Filter import Filter
 
 import config
 from config import Config
-
+from components.ConfirmDelete import ConfirmDelete
+from resource_path import resource_path
 
 class llfApp(App):
 
-    CSS_PATH = "style.tcss"
+    CSS_PATH = resource_path("tcss/style.tcss")
     BINDINGS = [
         ("n", "new_filter", "Create New Filter"),
         ("f", "select_filters", "Toggle Filters"),
@@ -59,14 +60,21 @@ class llfApp(App):
         self.push_screen(SelectFiltersScreen(options, self.config), update_active_filters)  # type: ignore[call-overload]
 
     def on_select_filters_screen_delete_filter_request(self, event: SelectFiltersScreen.DeleteFilterRequest):
+        def delete(v: str):
+            if v == "No":
+                pass
+            else:
+                target = next((f for f in self.filters if f.uuid == event.uuid), None)
+                if target is None:
+                    return # maybe throw err msg here? is this even possible?
+                else:
+                    self.config.filters.remove(target)
+                    config.update_config(self.config)
+                    self.filters = self.config.filters
+            self.action_select_filters()
 
-        target = next((f for f in self.filters if f.uuid == event.uuid), None)
-        if target is None:
-            return # maybe throw err msg here? is this even possible?
-        else:
-            self.config.filters.remove(target)
-            config.update_config(self.config)
-            self.filters = self.config.filters
+        self.pop_screen()
+        self.push_screen(ConfirmDelete(), delete)  # type: ignore[call-overload]
 
 
     def on_select_filters_screen_edit_filter_request(self, event: SelectFiltersScreen.EditFilterRequest):
@@ -81,13 +89,14 @@ class llfApp(App):
                 self.config.filters.append(filter)
                 config.update_config(self.config)
                 self.filters = self.config.filters
+                self.action_select_filters()
 
-
+        self.pop_screen()
         target = next((f for f in self.filters if f.uuid == event.uuid), None)
         if target is None:
             return # maybe throw err msg here? is this even possible?
         else:
-            self.push_screen(CreateFilterScreen(target), update_filter)
+            self.push_screen(CreateFilterScreen(target), update_filter)  # type: ignore[call-overload]
 
     # def action_test_layout(self) -> None:
     #     self.push_screen(LayoutTest())

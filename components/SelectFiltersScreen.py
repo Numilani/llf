@@ -9,7 +9,7 @@ from textual.widgets import Label, SelectionList, Footer
 from objects.Filter import Filter
 from config import Config
 from components.CreateFilterScreen import CreateFilterScreen
-
+from resource_path import resource_path
 
 class SelectFiltersScreen(ModalScreen[list[UUID]]):
     class EditFilterRequest(Message):
@@ -22,7 +22,7 @@ class SelectFiltersScreen(ModalScreen[list[UUID]]):
             super().__init__()
             self.uuid = uuid
 
-    CSS_PATH = "modal.tcss"
+    CSS_PATH = resource_path("tcss/modal.tcss")
     BINDINGS = [
         ("escape", "app.pop_screen", "Back"),
         ("ctrl+s", "save", "Save Filters"),

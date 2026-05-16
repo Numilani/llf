@@ -2,10 +2,10 @@ from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.containers import Grid
 from textual.widgets import Label, SelectionList, Footer, Static
-
+from resource_path import resource_path
 
 class LayoutTest(Screen):
-    CSS_PATH = "modal.tcss"
+    CSS_PATH = resource_path("tcss/modal.tcss")
     BINDINGS = [
         ("escape", "", "Back"),
         ("ctrl+s", "save", "Save Filters"),

@@ -49,6 +49,10 @@ class FileLog(Log):
     def refilter_log(self):
         self.clear()
 
+        if len(self.filters) == 0:
+            self.write_lines(self.log_lines)
+            return
+
         for line in self.log_lines:
             self.apply_filters(line)
 

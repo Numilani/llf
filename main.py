@@ -4,14 +4,14 @@ import tempfile
 import platform
 import os
 import selectors
+from resource_path import is_frozen
 
 from llfApp import llfApp
-
 
 def run() -> None:
     if len(sys.argv) != 2 and sys.stdin.isatty():
         print("need file (and better error msgs)")
-        exit()
+        sys.exit()
     if sys.stdin.isatty():
         app = llfApp(sys.argv[1])
         app.run()
@@ -23,7 +23,11 @@ def run() -> None:
             tty_target = "CON" if platform.system() == "Windows" else "/dev/tty"
             with open(tty_target, "rb", buffering=0) as tty_stdin:
                 with subprocess.Popen(
-                    ["python", sys.argv[0], temp_file.name],
+                    (
+                        [sys.argv[0], temp_file.name]
+                            if is_frozen()
+                        else ["python", sys.argv[0], temp_file.name]
+                    ),
                     stdin=tty_stdin,
                     close_fds=True,
                     env={**os.environ, "TEXTUAL_ALLOW_SIGNALS": "1"},
