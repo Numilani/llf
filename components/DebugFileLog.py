@@ -9,7 +9,7 @@ import sys
 from objects.Filter import Filter
 
 
-class FileLog(Log):
+class DebugFileLog(Log):
     log_lines: reactive[list[str]] = reactive(list)
 
     def __init__(self, filename) -> None:
@@ -23,19 +23,21 @@ class FileLog(Log):
     async def watch_log_lines(self, lines):
         if len(lines) == 0:
             return
-        await self.apply_filters(lines[-1])
+        self.apply_filters(lines[-1])
 
     async def read_lines(self):
         while True:
-            line = await asyncio.to_thread(self.file.readline)
+            line = self.file.readline()
+            # line = await asyncio.to_thread(self.file.readline)
             if line == b"":
                 await asyncio.sleep(0.1)
+                continue
             self.app.call_from_thread(self.log_lines.append, line.decode("utf-8"))
-            self.app.call_from_thread(self.mutate_reactive, FileLog.log_lines)
+            self.app.call_from_thread(self.mutate_reactive, DebugFileLog.log_lines)
             # self.log_lines.append(line.decode("utf-8"))
             # self.mutate_reactive(FileLog.log_lines)
     
-    async def apply_filters(self, line):
+    def apply_filters(self, line):
         already_printed = False
         if len(self.filters) == 0:
             self.write_line(line)
@@ -43,20 +45,23 @@ class FileLog(Log):
             for filter in self.filters:
                 if already_printed:
                     continue
-                matches: bool = await asyncio.to_thread(filter.regex_compiled.match(line))
+                matches: bool = filter.regex_compiled.match(line)
+                # matches: bool = await asyncio.to_thread(filter.regex_compiled.match(line))
                 if matches:
-                    self.write_line(line)
+                    # self.write_line(line)
+                    self.write_line("apply_filters: line written")
                     already_printed = True
 
     async def refilter_log(self):
         self.clear()
 
         if len(self.filters) == 0:
-            self.write_lines(self.log_lines)
+            # self.write_lines(self.log_lines)
+            self.write_line("refilter_log: write_lines (all lines, unfiltered) called")
             return
 
         for line in self.log_lines:
-            await self.apply_filters(line)
+            self.apply_filters(line)
 
     async def on_mount(self) -> None:
         self.run_worker(self.read_lines(), exclusive=True, thread=True)

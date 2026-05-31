@@ -1,3 +1,4 @@
+import asyncio
 from uuid import UUID
 
 from textual.app import App, ComposeResult
@@ -12,12 +13,16 @@ from components.LayoutTest import LayoutTest
 from objects.Filter import Filter
 
 import config
+import os
+import signal
 from config import Config
 from components.ConfirmDelete import ConfirmDelete
 from resource_path import resource_path
+from components.DebugFileLog import DebugFileLog
 
 class llfApp(App):
 
+    REFRESH_RATE = 10
     CSS_PATH = resource_path("tcss/style.tcss")
     BINDINGS = [
         ("n", "new_filter", "Create New Filter"),
@@ -33,7 +38,8 @@ class llfApp(App):
 
     def compose(self) -> ComposeResult: 
         yield Header()
-        yield FileLog(self.filename)
+        # yield FileLog(self.filename)
+        yield DebugFileLog(self.filename)
         yield Footer()
 
     # def on_input_submitted(self, event: Input.Submitted):
@@ -51,8 +57,10 @@ class llfApp(App):
             for f in self.filters:
                 f.enabled = f.uuid in filters
             active_filters = [filter for filter in self.filters if filter.enabled]
-            self.query_one(FileLog).filters = active_filters
-            self.query_one(FileLog).refilter_log()
+            # self.query_one(FileLog).filters = active_filters
+            # asyncio.ensure_future(self.query_one(FileLog).refilter_log())
+            self.query_one(DebugFileLog).filters = active_filters
+            asyncio.ensure_future(self.query_one(DebugFileLog).refilter_log())
 
         options = []
         for f in self.filters:
@@ -97,6 +105,16 @@ class llfApp(App):
             return # maybe throw err msg here? is this even possible?
         else:
             self.push_screen(CreateFilterScreen(target), update_filter)  # type: ignore[call-overload]
+
+    def on_unmount(self):
+        try:
+            pgid = os.getpgrp()
+            os.killpg(pgid, signal.SIGTERM)
+        except:
+            pass
+        finally:
+            self.exit()
+
 
     # def action_test_layout(self) -> None:
     #     self.push_screen(LayoutTest())
