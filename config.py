@@ -1,6 +1,7 @@
 import json
 import os
 from objects.Filter import Filter
+from typing import Self
 
 
 class Config:
@@ -10,14 +11,14 @@ class Config:
         return {"filters": [f.to_dict() for f in self.filters]}
 
     @classmethod
-    def from_dict(cls, d: dict) -> Config:
+    def from_dict(cls, d: dict) -> Self:
         c = Config()
         c.filters = [Filter.from_dict(f) for f in d["filters"]]
         return c
 
 
 # helper methods
-def read_config() -> Config:
+def read_config() -> Self:
     candidates = [
         os.path.join(os.getcwd(), ".llfrc"),
         os.path.join(os.path.expanduser("~"), ".llfrc"),

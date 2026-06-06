@@ -2,6 +2,7 @@ import uuid
 import re
 from uuid import UUID
 from re import Pattern
+from typing import Self
 
 class Filter():
 
@@ -20,13 +21,13 @@ class Filter():
         }
     
     @classmethod
-    def from_dict(cls, d: dict) -> Filter:
+    def from_dict(cls, d: dict) -> Self:
         f = Filter(d["name"], d["regex"])
         f.uuid = d["uuid"]
         return f
 
     @classmethod
-    def from_filter(cls, name, regex, uuid) -> Filter:
+    def from_filter(cls, name, regex, uuid) -> Self:
         f = Filter(name, regex)
         f.uuid = uuid
         return f

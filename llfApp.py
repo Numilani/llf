@@ -107,14 +107,11 @@ class llfApp(App):
             self.push_screen(CreateFilterScreen(target), update_filter)  # type: ignore[call-overload]
 
     def on_unmount(self):
+        self.exit()
+        print(chr(27) + "[2J")
+        # os.system('clear')
         try:
             pgid = os.getpgrp()
             os.killpg(pgid, signal.SIGTERM)
         except:
             pass
-        finally:
-            self.exit()
-
-
-    # def action_test_layout(self) -> None:
-    #     self.push_screen(LayoutTest())
